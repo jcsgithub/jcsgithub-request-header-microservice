@@ -12,34 +12,17 @@ module.exports = function (app) {
 			res.sendFile(path + '/public/index.html');
 		});
 		
-	app.route('/:str')
+	app.route('/api/whoami')
 		.get(function (req, res) {
-			var finalData = { unix: null, natural: null };
-			var str = req.params.str;
+			var ipaddress = req.headers['x-forwarded-for'];
+			var language = req.headers['accept-language'].split(',')[0];
+			var software = /\(([^)]+)\)/.exec(req.headers['user-agent'])[1];
 			
-			var isNumbersOnly = /^\d+$/.test(str);
-			
-			if (isNumbersOnly) {
-				finalData.unix = Number(str);
-				finalData.natural = moment.unix(Number(str)).format('MMMM DD, YYYY');
-			} else {
-				var dateFormats = [
-					'M-D-YYYY',
-					'MM-D-YYYY',
-					'MMM-D-YYYY',
-					'MMMM-D-YYYY',
-					'M-DD-YYYY',
-					'MM-DD-YYYY',
-					'MMM-DD-YYYY',
-					'MMMM-DD-YYYY',
-					'YYYY-MM-DD'
-				];
-				var momentObject = moment(str, dateFormats);
-				if (momentObject.isValid()) {
-					finalData.unix = Number(momentObject.format('X'));
-					finalData.natural = momentObject.format('MMMM DD, YYYY');
-				}
-			}
+			var finalData = {
+				ipaddress: ipaddress,	
+				language: language,
+				software: software
+			};
 			
 			res.json(finalData);
 		});
